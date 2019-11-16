@@ -5,8 +5,8 @@
 
 /* define variables for the problem */
 int LENGTH = 0;
-#define UPPER_LIM 10000
-#define LOWER_LIM  1
+#define UPPER_LIM 50000
+#define LOWER_LIM 1
 
 /* define derived values from the variables */
 int NUM_THREADS;
@@ -16,12 +16,11 @@ int OFFSET;
 
 
 /* function definitions */
-int generate_random_number(unsigned int lower_limit, unsigned int upper_limit);
 void merge_sort(int arr[], int left, int right);
 void merge(int arr[], int left, int middle, int right);
 void* thread_merge_sort(void* arg);
-void merge_sections_of_array(int arr[], int number, int aggregation);
-void test_array_is_in_order(int arr[]);
+void merge_partes(int arr[], int number, int aggregation);
+void testa_ordem(int arr[]);
 
 int main(int argc, const char * argv[]) {
 
@@ -61,7 +60,7 @@ int main(int argc, const char * argv[]) {
             pthread_join(threads[i], NULL);
         }
 
-        merge_sections_of_array(arr, NUM_THREADS, 1);
+        merge_partes(arr, NUM_THREADS, 1);
 
 
         gettimeofday(&end, NULL);
@@ -72,10 +71,12 @@ int main(int argc, const char * argv[]) {
         for (int i = 0; i < LENGTH; i ++) {
             printf("%d ",arr[i]);
         }
+        FILE * saida = fopen("saida.txt","w");
         for (int i = 0; i < LENGTH; i ++) {
-            FILE * saida = fopen("saida.txt","w");
-            fprintf(saida,"%d ",arr[i]);
+
+            fprintf(saida,"%d\n",arr[i]);
         }
+        fclose(saida);
     }
 
     return 0;
@@ -83,7 +84,7 @@ int main(int argc, const char * argv[]) {
 
 
 
-void merge_sections_of_array(int arr[], int number, int aggregation) {
+void merge_partes(int arr[], int number, int aggregation) {
     for(int i = 0; i < number; i = i + 2) {
         int left = i * (NUMBERS_PER_THREAD * aggregation);
         int right = ((i + 2) * NUMBERS_PER_THREAD * aggregation) - 1;
@@ -94,7 +95,7 @@ void merge_sections_of_array(int arr[], int number, int aggregation) {
         merge(arr, left, middle, right);
     }
     if (number / 2 >= 1) {
-        merge_sections_of_array(arr, number / 2, aggregation * 2);
+        merge_partes(arr, number / 2, aggregation * 2);
     }
 }
 
@@ -117,7 +118,7 @@ void *thread_merge_sort(void* arg)
 }
 
 /* test to ensure that the array is in sorted order */
-void test_array_is_in_order(int arr[]) {
+void testa_ordem(int arr[]) {
     int max = 0;
     for (int i = 1; i < LENGTH; i ++) {
         if (arr[i] >= arr[i - 1]) {
